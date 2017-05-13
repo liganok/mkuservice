@@ -2,6 +2,7 @@ import express from 'express';
 import Mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import {default as Logger} from 'morgan';
+import passport from 'passport';
 
 import Config from './config/config';
 
@@ -23,6 +24,8 @@ Mongoose.connection.on('error', function () {
 app.set('port', process.env.PORT || 3001);
 app.use(Logger('dev'));
 
+require('./models/User');
+require('./config/passport');
 
 app.use(require('./routes'));
 

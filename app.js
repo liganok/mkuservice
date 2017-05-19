@@ -3,12 +3,13 @@ import Mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import {default as Logger} from 'morgan';
 import passport from 'passport';
-
+import cors from 'cors';
 import Config from './config/config';
 
 let app = express();
 
 // Normal express config defaults
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 

@@ -1,8 +1,32 @@
 var mongoose = require('mongoose');
 var router = require('express').Router();
 var passport = require('passport');
-var User = mongoose.model('User');
+let User = mongoose.model('User');
+let Agenda = mongoose.model('Agenda');
 var auth = require('../auth');
+
+router.param('agenda',function (req, res, next, id) {
+  Agenda.findById(id).then(function (agenda) {
+    if(!agenda){return res.sendStatus(404);}
+    req.agenda = agenda;
+  }).catch(next);
+});
+
+
+router.post('/',auth.required,function (req,res,next) {
+  User.findById(req.payload.id).then(function (user) {
+    if(!user) {return res.sendStatus(401);}
+
+    let agenda = new Agenda(req.body.agenda);
+    agenda.user = user;
+
+    return agenda.save().then(function () {
+      console.log(agenda.user);
+      return res.json({agenda:agenda.toJSON()});
+    }).catch(next);
+  }).catch(next);
+});
+
 
 router.get('/user', auth.required, function(req, res, next){
   User.findById(req.payload.id).then(function(user){

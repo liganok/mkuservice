@@ -12,7 +12,7 @@ let AgendaSchema = new mongoose.Schema({
   duration:{typeName:Number,default:0},
   sequence:{typeName:Number,default:0},
   user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},
-  subItems:[this],
+  subItems:[{this}],
 },{timestamps:true});
 
 AgendaSchema.methods.updateDuration = function () {
@@ -26,14 +26,14 @@ AgendaSchema.methods.updateDuration = function () {
   });
 };
 
-AgendaSchema.methods.toJSONFro = function () {
+AgendaSchema.methods.toJSON = function () {
   return{
     id:this._id,
     name:this.name,
     duration:this.duration,
     sequence:this.sequence,
     user:this.user
-  }
+  };
 };
 
 mongoose.model('Agenda',AgendaSchema);

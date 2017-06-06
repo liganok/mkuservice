@@ -26,6 +26,7 @@ app.set('port', process.env.PORT || 3001);
 app.use(Logger('dev'));
 
 require('./models/User');
+require('./models/Agenda');
 require('./config/passport');
 
 app.use(require('./routes'));

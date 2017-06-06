@@ -5,12 +5,12 @@ let User = mongoose.model('User');
 let Agenda = mongoose.model('Agenda');
 var auth = require('../auth');
 
-router.param('agenda',function (req, res, next, id) {
-  Agenda.findById(id).then(function (agenda) {
+/*router.param('agenda',function (req, res, next, id) {
+  Agenda.find({_id:id}).then(function (agenda) {
     if(!agenda){return res.sendStatus(404);}
-    req.agenda = agenda;
+    req.agenda = agenda[0];
   }).catch(next);
-});
+});*/
 
 
 router.post('/',auth.required,function (req,res,next) {
@@ -27,47 +27,43 @@ router.post('/',auth.required,function (req,res,next) {
   }).catch(next);
 });
 
+router.put('/:agenda',auth.required, function (req,res,next) {
+  User.findById(req.payload.id).then(function (user) {
+    if(req.agenda.user._id.toString() === req.payload.id.toString()){
+      if(typeof req.body.agenda.name !== 'undefined'){
+        req.agenda.name = req.body.agenda.name;
+      }
 
-router.get('/user', auth.required, function(req, res, next){
-  User.findById(req.payload.id).then(function(user){
-    if(!user){ return res.sendStatus(401); }
+      if(typeof req.body.agenda.startAt !== 'undefined'){
+        req.agenda.startAt = req.body.agenda.startAt;
+      }
 
-    return res.json({user: user.toAuthJSON()});
-  }).catch(next);
-});
+      if(typeof req.body.agenda.duration !== 'undefined'){
+        req.agenda.duration = req.body.agenda.duration;
+      }
 
-router.post('/users', function(req, res, next){
-  let user = new User();
+      if(typeof req.body.agenda.sequence !== 'undefined'){
+        req.agenda.sequence = req.body.agenda.sequence;
+      }
 
-  user.username = req.body.user.username;
-  user.email = req.body.user.email;
-  user.setPassword(req.body.user.password);
+      if(typeof req.body.agenda.subItems !== 'undefined'){
+        req.agenda.subItems = req.body.agenda.subItems;
+      }
 
-  user.save().then(function(){
-    return res.json({user: user.toAuthJSON()});
-  }).catch(next);
-});
+      rea.agenda.save().then(function (agenda) {
+        return res.json({agenda:agenda.toJSON()}).sendStatus(200);
+      }).catch(next);
 
-router.post('/users/login', function(req, res, next){
-  if(!req.body.user.email){
-    return res.status(422).json({errors: {email: "can't be blank"}});
-  }
-
-  if(!req.body.user.password){
-    return res.status(422).json({errors: {password: "can't be blank"}});
-  }
-
-  passport.authenticate('local', {session: false}, function(err, user, info){
-    if(err){ return next(err); }
-
-    if(user){
-      user.token = user.generateJWT();
-      console.log('auth passed');
-      return res.json({user: user.toAuthJSON()});
-    } else {
-      return res.status(422).json(info);
+    }else {
+      return res.sendStatus(403);
     }
-  })(req, res, next);
+  });
+});
+
+router.get('/',auth.required,function (req,res,next) {
+  return Agenda.find({}).then(function (agenda) {
+    return res.json({agenda:agenda}).sendStatus(200);
+  }).catch(next);
 });
 
 module.exports = router;

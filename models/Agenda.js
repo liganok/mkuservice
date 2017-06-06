@@ -12,7 +12,6 @@ let AgendaSchema = new mongoose.Schema({
   duration:{typeName:Number,default:0},
   sequence:{typeName:Number,default:0},
   user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},
-  subItems:[{this}],
 },{timestamps:true});
 
 AgendaSchema.methods.updateDuration = function () {

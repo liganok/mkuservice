@@ -9,9 +9,10 @@ let User = mongoose.model('User');
 let AgendaSchema = new mongoose.Schema({
   name:String,
   startAt:Date,
-  duration:{typeName:Number,default:0},
-  sequence:{typeName:Number,default:0},
+  duration:{type:Number,default:0},
+  sequence:{type:Number,default:0},
   user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},
+  subItems:[{type:mongoose.Schema.Types.ObjectId,ref:'Agenda'}],
 },{timestamps:true});
 
 AgendaSchema.methods.updateDuration = function () {
@@ -31,7 +32,7 @@ AgendaSchema.methods.toJSON = function () {
     name:this.name,
     duration:this.duration,
     sequence:this.sequence,
-    user:this.user
+    subItems:this.subItems
   };
 };
 

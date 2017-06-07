@@ -31,9 +31,6 @@ require('./config/passport');
 
 app.use(require('./routes'));
 
-app.get('/api/test', function (req, res, next) {
-    res.send('helloword');
-});
 
 app.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));

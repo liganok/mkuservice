@@ -4,7 +4,7 @@ var passport = require('passport');
 var User = mongoose.model('User');
 var auth = require('../auth');
 
-router.get('/users', auth.required, function(req, res, next){
+router.get('/user', auth.required, function(req, res, next){
   User.findById(req.payload.id).then(function(user){
     if(!user){ return res.sendStatus(401); }
 
@@ -12,7 +12,7 @@ router.get('/users', auth.required, function(req, res, next){
   }).catch(next);
 });
 
-router.post('/users', function(req, res, next){
+router.post('/user', function(req, res, next){
   let user = new User();
 
   user.username = req.body.user.username;
@@ -24,7 +24,7 @@ router.post('/users', function(req, res, next){
   }).catch(next);
 });
 
-router.put('/users',auth.required, function(req, res, next){
+router.put('/user',auth.required, function(req, res, next){
   User.findById(req.payload.id).then(function(user){
     if(!user){ return res.sendStatus(401); }
 
@@ -51,7 +51,7 @@ router.put('/users',auth.required, function(req, res, next){
   }).catch(next);
 });
 
-router.post('/users/login', function(req, res, next){
+router.post('/user/login', function(req, res, next){
   if(!req.body.user.email){
     return res.status(422).json({errors: {email: "can't be blank"}});
   }

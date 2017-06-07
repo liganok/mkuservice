@@ -6,7 +6,9 @@ let Agenda = mongoose.model('Agenda');
 var auth = require('../auth');
 
 router.param('agenda', function (req, res, next, id) {
-  Agenda.find({_id: id}).then(function (agenda) {
+  Agenda.find({_id: id})
+    .populate('subItems')
+    .then(function (agenda) {
     if (!agenda) {
       return res.sendStatus(404);
     }

@@ -8,7 +8,7 @@ let User = mongoose.model('User');
 
 let AgendaSchema = new mongoose.Schema({
   name:String,
-  startAt:Date,
+  startedAt:Date,
   duration:{type:Number,default:0},
   sequence:{type:Number,default:0},
   user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},
@@ -32,7 +32,10 @@ AgendaSchema.methods.toJSON = function () {
     name:this.name,
     duration:this.duration,
     sequence:this.sequence,
-    subItems:this.subItems
+    subItems:this.subItems,
+    startedAt:this.startedAt,
+    updatedAt:this.updatedAt,
+    createdAt:this.createdAt
   };
 };
 

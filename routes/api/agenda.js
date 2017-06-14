@@ -91,7 +91,7 @@ router.delete('/:agenda', auth.required, function (req, res, next) {
 
 router.get('/', auth.required, function (req, res, next) {
   return Agenda.find({}).then(function (agenda) {
-    return res.json({agenda: agenda});
+    return res.json({agendas: agenda});
   }).catch(next);
 });
 

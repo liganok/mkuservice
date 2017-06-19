@@ -36,7 +36,6 @@ AgendaSchema.methods.toJSON = function () {
     startedAt:this.startedAt,
     updatedAt:this.updatedAt,
     createdAt:this.createdAt,
-    user:this.user
   };
 };
 

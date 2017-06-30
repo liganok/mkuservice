@@ -32,7 +32,7 @@ AgendaSchema.methods.toJSON = function () {
     name:this.name,
     duration:this.duration,
     sequence:this.sequence,
-    subItems:this.subItems,
+    subItems:this.subItems? this.subItems:[],
     startedAt:this.startedAt,
     updatedAt:this.updatedAt,
     createdAt:this.createdAt,

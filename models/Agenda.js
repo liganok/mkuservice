@@ -9,6 +9,7 @@ let User = mongoose.model('User');
 let AgendaSchema = new mongoose.Schema({
   name:String,
   startedAt:Date,
+  isRoot: {type:Boolean,default:true},
   duration:{type:Number,default:0},
   sequence:{type:Number,default:0},
   user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},
@@ -30,6 +31,7 @@ AgendaSchema.methods.toJSON = function () {
   return{
     id:this._id,
     name:this.name,
+    isRoot:this.isRoot,
     duration:this.duration,
     sequence:this.sequence,
     subItems:this.subItems? this.subItems:[],

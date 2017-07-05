@@ -4,6 +4,7 @@ var passport = require('passport');
 let User = mongoose.model('User');
 let Agenda = mongoose.model('Agenda');
 var auth = require('../auth');
+import deepSave from '../../utils/deepSave';
 
 router.param('agenda', function (req, res, next, id) {
   Agenda.find({_id: id})
@@ -24,13 +25,17 @@ router.post('/', auth.required, function (req, res, next) {
       return res.sendStatus(401);
     }
 
-    let agenda = new Agenda(req.body.agenda);
-    agenda.user = user;
+    let agenda = req.body.agenda;
+    if(agenda){
+      agenda.user = req.payload.id;
+      deepSave(req.body.agenda).then(data=>{
+        agenda = data;
+        return res.json({agendas: agenda});
+      });
+    }else{
+      return res.sendStatus(401);
+    }
 
-    return agenda.save().then(function () {
-      console.log(agenda.user);
-      return res.json({agenda: agenda.toJSON()});
-    }).catch(next);
   }).catch(next);
 });
 

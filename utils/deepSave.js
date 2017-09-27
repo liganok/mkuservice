@@ -27,9 +27,15 @@ async function save(agenda) {
       isNeedUpdate = true;
       data.startedAt = agenda.startedAt;
     }
+
+    if (data.subItems !== agenda.subItems) {
+      isNeedUpdate = true;
+      data.subItems = agenda.subItems;
+    }
+
     if (isNeedUpdate) {
-      let data = await data.save();
-      return data.toJSON();
+      let agenda = await new Agenda(data).save();
+      return agenda.toJSON();
     }
     return agenda;
   }

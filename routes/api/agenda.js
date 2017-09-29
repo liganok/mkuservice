@@ -33,6 +33,35 @@ router.param('agenda', function (req, res, next, id) {
     }).catch(next)
 })
 
+router.get('/template', function (req, res, next) {
+
+  const getTemplate = async function (req, res) {
+    var query = {isRoot: true}
+    var limit = 20
+    var offset = 0
+    if (typeof req.query.limit !== 'undefined') {
+      limit = req.query.limit
+    }
+
+    if (typeof req.query.offset !== 'undefined') {
+      offset = req.query.offset
+    }
+    try {
+      let user = await User.findOne({email: 'liganok86@qq.com'})
+      query.user = user._id
+      let templates = await Agenda.find(query)
+        .limit(Number(limit))
+        .skip(Number(offset))
+        .exec()
+      return res.json({templates: templates})
+    } catch (err) {
+      console.log(err)
+      return err
+    }
+  }
+  getTemplate(req, res)
+})
+
 router.post('/', auth.required, function (req, res, next) {
   User.findById(req.payload.id).then(function (user) {
     if (!user) {
@@ -142,32 +171,5 @@ router.get('/', auth.required, function (req, res, next) {
   }
   getData(req, res)
 })
-router.get('/template', function (req, res, next) {
 
-  const getTemplate = async function (req, res) {
-    var query = {isRoot: true}
-    var limit = 20
-    var offset = 0
-    if (typeof req.query.limit !== 'undefined') {
-      limit = req.query.limit
-    }
-
-    if (typeof req.query.offset !== 'undefined') {
-      offset = req.query.offset
-    }
-    try {
-      let user = await User.findOne({email: 'liganok86@qq.com'})
-      query.user = user._id
-      let templates = await Agenda.find(query)
-        .limit(Number(limit))
-        .skip(Number(offset))
-        .exec()
-      return res.json({templates: templates})
-    } catch (err) {
-      console.log(err)
-      return err
-    }
-  }
-  getTemplate(req, res)
-})
 module.exports = router

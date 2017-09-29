@@ -1,86 +1,83 @@
-var mongoose = require('mongoose')
-var router = require('express').Router()
-var passport = require('passport')
-let User = mongoose.model('User')
-let Agenda = mongoose.model('Agenda')
-var auth = require('../auth')
+import User from '../../models/User'
+import Agenda from '../../models/Agenda'
 import deepSave from '../../utils/deepSave'
+import express from 'express'
+import passport from 'passport'
+//import auth from '../auth'
+const router = express.Router()
+var auth = require('../auth')
 
-router.param('agenda', function (req, res, next, id) {
-  if (id === 'template') {return next()}
-  Agenda.findOne({_id: id})
-    .populate({
-      path: 'subItems',
-      populate: {
+router.param('agenda', async function (req, res, next, id) {
+  try {
+    let agenda = await Agenda.findById(id)
+      .populate({
         path: 'subItems',
         populate: {
           path: 'subItems',
           populate: {
             path: 'subItems',
             populate: {
-              path: 'subItems'
+              path: 'subItems',
+              populate: {
+                path: 'subItems'
+              }
             }
           }
         }
-      }
-    })
-    .then(function (agenda) {
-      if (!agenda) {
-        return res.sendStatus(404)
-      }
-      req.agenda = agenda[0]
-      return next()
-    }).catch(next)
-})
-
-router.get('/template', function (req, res, next) {
-
-  const getTemplate = async function (req, res) {
-    var query = {isRoot: true}
-    var limit = 20
-    var offset = 0
-    if (typeof req.query.limit !== 'undefined') {
-      limit = req.query.limit
-    }
-
-    if (typeof req.query.offset !== 'undefined') {
-      offset = req.query.offset
-    }
-    try {
-      let user = await User.findOne({email: 'liganok86@qq.com'})
-      query.user = user._id
-      let templates = await Agenda.find(query)
-        .limit(Number(limit))
-        .skip(Number(offset))
-        .exec()
-      return res.json({templates: templates})
-    } catch (err) {
-      console.log(err)
-      return err
-    }
-  }
-  getTemplate(req, res)
-})
-
-router.post('/', auth.required, function (req, res, next) {
-  User.findById(req.payload.id).then(function (user) {
-    if (!user) {
-      return res.sendStatus(401)
-    }
-
-    let agenda = req.body.agenda
-    agenda.isRoot = true
-    if (agenda) {
-      agenda.user = req.payload.id
-      deepSave(req.body.agenda).then(data => {
-        agenda = data
-        return res.json(agenda)
+      })
+    if (!agenda) {
+      return res.json({
+        status: 1,
+        agenda: null
       })
     } else {
-      return res.sendStatus(401)
+      req.agenda = agenda
+      return next()
     }
+  } catch (error) {
+    return res.json({
+      status: 0,
+      type: 'ERROR',
+      message: error
+    })
+  }
+})
 
-  }).catch(next)
+router.post('/', auth.required, async function (req, res, next) {
+
+  try {
+    let user = await User.findById(req.payload.id)
+    if (!user) {
+      return res.json({
+        status: 400,
+        type: 'ERROR_GET_USER',
+        message: 'User was not found'
+      })
+    }
+  
+    let agenda = req.body.agenda
+    if (!agenda) {
+      return res.json({
+        status: 400,
+        type: 'ERROR_NULL_POST_DATA',
+        message: 'Nothing need to be saved'
+      })
+    }
+    agenda.isRoot = true
+    agenda.user = req.payload.id
+  
+    let savedAgenda = await deepSave(agenda)
+    return res.json({
+      status: 200,
+      message: 'Data saved'
+    })
+  } catch (error) {
+    return res.json({
+      status: 400,
+      type: 'ERROR_SAVED_FAILED',
+      message: error
+    })
+  }
 })
 
 router.put('/:agenda', auth.required, function (req, res, next) {
@@ -107,7 +104,7 @@ router.put('/:agenda', auth.required, function (req, res, next) {
       }
 
       req.agenda.save().then(function (agenda) {
-        return res.json({agenda: agenda.toJSON()})
+        return res.json({ agenda: agenda.toJSON() })
       }).catch(next)
 
     } else {
@@ -116,14 +113,27 @@ router.put('/:agenda', auth.required, function (req, res, next) {
   })
 })
 
-router.get('/:agenda', auth.required, function (req, res, next) {
-  User.findById(req.payload.id).then(function (user) {
-    if (req.agenda.user.toString() === req.payload.id.toString()) {
-      return res.json(req.agenda.toJSON())
+router.get('/:agenda', auth.required, async function (req, res, next) {
+  try {
+    let user = await User.findById(req.payload.id)
+    if (user._id.toString() === req.payload.id.toString()) {
+      return res.json({
+        status: 1,
+        agenda: req.agenda.toJSON()
+      })
     } else {
-      return res.sendStatus(403)
+      return res.json({
+        status: 1,
+        agenda: null
+      })
     }
-  })
+  } catch (error) {
+    return res.json({
+      status: 0,
+      type: 'ERROR',
+      message: error
+    })
+  }
 })
 
 router.delete('/:agenda', auth.required, function (req, res, next) {
@@ -141,7 +151,7 @@ router.delete('/:agenda', auth.required, function (req, res, next) {
 // type =0 agenda; type =1 trash
 router.get('/', auth.required, function (req, res, next) {
   const getData = async function (req, res) {
-    let query = {isRoot: true}
+    let query = { isRoot: true }
     let limit = 20
     let offset = 0
 
@@ -163,7 +173,7 @@ router.get('/', auth.required, function (req, res, next) {
         .limit(Number(limit))
         .skip(Number(offset))
         .exec()
-      return res.json({agendas: agendas})
+      return res.json({ agendas: agendas })
     } catch (err) {
       console.log(err)
       return err
@@ -172,4 +182,4 @@ router.get('/', auth.required, function (req, res, next) {
   getData(req, res)
 })
 
-module.exports = router
+export default router

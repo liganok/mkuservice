@@ -47,4 +47,4 @@ UserSchema.methods.toAuthJSON = function(){
   };
 };
 
-mongoose.model('User', UserSchema);
+export default mongoose.model('User', UserSchema);

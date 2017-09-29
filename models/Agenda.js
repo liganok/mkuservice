@@ -43,4 +43,4 @@ AgendaSchema.methods.toJSON = function () {
   };
 };
 
-mongoose.model('Agenda',AgendaSchema);
+ export default mongoose.model('Agenda',AgendaSchema);

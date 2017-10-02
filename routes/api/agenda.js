@@ -47,14 +47,14 @@ router.post('/', auth.required, async function (req, res, next) {
 
   try {
     let user = await User.findById(req.payload.id)
-    if (!user) {
+    if (typeof user._id) {
       return res.json({
         status: 400,
         type: 'ERROR_GET_USER',
         message: 'User was not found'
       })
     }
-  
+
     let agenda = req.body.agenda
     if (!agenda) {
       return res.json({
@@ -65,7 +65,7 @@ router.post('/', auth.required, async function (req, res, next) {
     }
     agenda.isRoot = true
     agenda.user = req.payload.id
-  
+
     let savedAgenda = await deepSave(agenda)
     return res.json({
       status: 200,
@@ -80,9 +80,18 @@ router.post('/', auth.required, async function (req, res, next) {
   }
 })
 
-router.put('/:agenda', auth.required, function (req, res, next) {
-  User.findById(req.payload.id).then(function (user) {
-    if (req.agenda.user.toString() === req.payload.id.toString()) {
+router.put('/:agenda', auth.required, async function (req, res, next) {
+  try {
+    let user = await User.findById(req.payload.id)
+    if (typeof user._id === 'undefined') {
+      if (typeof user._id) {
+        return res.json({
+          status: 400,
+          type: 'ERROR_GET_USER',
+          message: 'User was not found'
+        })
+      }
+    } else {
       if (typeof req.body.agenda.name !== 'undefined') {
         req.agenda.name = req.body.agenda.name
       }
@@ -103,14 +112,22 @@ router.put('/:agenda', auth.required, function (req, res, next) {
         req.agenda.subItems = req.body.agenda.subItems
       }
 
-      req.agenda.save().then(function (agenda) {
-        return res.json({ agenda: agenda.toJSON() })
-      }).catch(next)
-
-    } else {
-      return res.sendStatus(403)
+      if (typeof req.body.agenda.isDel !== 'undefined') {
+        req.agenda.isDel = req.body.agenda.isDel
+      }
+      let savedAgenda = await req.agenda.save()
+      return res.json({
+        status: 200,
+        message: 'Data saved'
+      })
     }
-  })
+  } catch (error) {
+    return res.json({
+      status: 400,
+      type: 'ERROR_SAVED_FAILED',
+      message: error
+    })
+  }
 })
 
 router.get('/:agenda', auth.required, async function (req, res, next) {
@@ -151,7 +168,7 @@ router.delete('/:agenda', auth.required, function (req, res, next) {
 // type =0 agenda; type =1 trash
 router.get('/', auth.required, function (req, res, next) {
   const getData = async function (req, res) {
-    let query = { isRoot: true }
+    let query = { isRoot: true ,isDel:{$ne:true}}
     let limit = 20
     let offset = 0
 
@@ -163,15 +180,15 @@ router.get('/', auth.required, function (req, res, next) {
       offset = req.query.offset
     }
 
-    if (req.query.type === 1) {
+    if (req.query.type === '1') {
       query.isDel = true
     }
-
+    console.log(query,req.query.type === '1')
     try {
       query.user = req.payload.id
       let agendas = await Agenda.find(query)
         .limit(Number(limit))
-        .skip(Number(offset))
+        //.skip(Number(offset))
         .exec()
       return res.json({ agendas: agendas })
     } catch (err) {

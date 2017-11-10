@@ -1,6 +1,8 @@
 let mongoose = require('mongoose');
 let Agenda = mongoose.model('Agenda');
 
+let delArr = []
+
 async function save(agenda) {
   if (agenda.id.search('NEW') >= 0) {
     let data = await new Agenda(agenda).save();
@@ -30,6 +32,14 @@ async function save(agenda) {
 
     if (data.subItems !== agenda.subItems) {
       isNeedUpdate = true;
+      
+      //deep remove uneeded item
+      // date.subItems.foreach((item, index) => {
+      //   if (-1 === agenda.subItems.indexOf(item)) {
+      //     delArr.push(item)
+      //   }
+      // })
+      //console.log('sid-tid',data.subItems,agenda.subItems)
       data.subItems = agenda.subItems;
     }
 
@@ -40,8 +50,6 @@ async function save(agenda) {
     return agenda;
   }
 }
-
-
 
 export default async function deepSave(agenda) {
   if (agenda.subItems.length === 0) {
@@ -60,6 +68,6 @@ export default async function deepSave(agenda) {
       }
     }
     let agendaPromise = await save(agenda);
-    return agendaPromise;
+    return { agendaPromise,delArr };
   }
 }

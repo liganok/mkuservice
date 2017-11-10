@@ -47,7 +47,7 @@ router.post('/', auth.required, async function (req, res, next) {
 
   try {
     let user = await User.findById(req.payload.id)
-    if (typeof user._id) {
+    if (typeof user._id === 'undefined') {
       return res.json({
         status: 400,
         type: 'ERROR_GET_USER',
@@ -65,8 +65,10 @@ router.post('/', auth.required, async function (req, res, next) {
     }
     agenda.isRoot = true
     agenda.user = req.payload.id
+    console.log('source', req.body.delArr)
 
     let savedAgenda = await deepSave(agenda)
+    //console.log('target', savedAgenda)
     return res.json({
       status: 200,
       message: 'Data saved'
@@ -116,6 +118,8 @@ router.put('/:agenda', auth.required, async function (req, res, next) {
         req.agenda.isDel = req.body.agenda.isDel
       }
       let savedAgenda = await req.agenda.save()
+      console.table('source', req.agenda)
+      console.table('target', req.body.agenda)
       return res.json({
         status: 200,
         message: 'Data saved'
@@ -168,7 +172,7 @@ router.delete('/:agenda', auth.required, function (req, res, next) {
 // type =0 agenda; type =1 trash
 router.get('/', auth.required, function (req, res, next) {
   const getData = async function (req, res) {
-    let query = { isRoot: true ,isDel:{$ne:true}}
+    let query = { isRoot: true, isDel: { $ne: true } }
     let limit = 20
     let offset = 0
 
@@ -183,11 +187,12 @@ router.get('/', auth.required, function (req, res, next) {
     if (req.query.type === '1') {
       query.isDel = true
     }
-    console.log(query,req.query.type === '1')
+    console.log(query, req.query.type === '1')
     try {
       query.user = req.payload.id
       let agendas = await Agenda.find(query)
         .limit(Number(limit))
+        .sort({ startedAt: -1 })
         //.skip(Number(offset))
         .exec()
       return res.json({ agendas: agendas })

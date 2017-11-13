@@ -1,7 +1,7 @@
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
-var mongoose = require('mongoose');
-var User = mongoose.model('User');
+import passport from 'passport'
+import mongoose from 'mongoose'
+let LocalStrategy = require('passport-local').Strategy;
+let User = mongoose.model('User');
 
 passport.use(new LocalStrategy({
   usernameField: 'user[email]',

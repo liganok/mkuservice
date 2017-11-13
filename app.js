@@ -5,6 +5,7 @@ import {default as Logger} from 'morgan';
 import passport from 'passport';
 import cors from 'cors';
 import Config from './config/config';
+import router from './routes'
 
 let app = express();
 const path = require('path');
@@ -27,12 +28,18 @@ Mongoose.connection.on('error', function () {
 
 app.set('port', PORT);
 app.use(Logger('dev'));
-
-require('./models/User');
-require('./models/Agenda');
 require('./config/passport');
+router(app)
 
-app.use(require('./routes'));
+app.use(function (err, req, res, next) {
+  if (err.name === "UnauthorizedError") {
+    res.send({
+      status:401,
+      type: 'AUTH/IVALID_TOKEN',
+      message:'invalid token'
+    });
+  }
+})
 
 app.use('/', function(request, response) {
   response.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));

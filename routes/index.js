@@ -1,5 +1,9 @@
-var router = require('express').Router();
+import agenda from './api/agenda'
+import user from './api/users'
+import template from './api/template'
 
-router.use('/api', require('./api/index'));
-
-module.exports = router;
+export default app=>{
+  app.use('/api/agenda',agenda)
+  app.use('/api/user', user)
+  app.use('/api/template', template)
+}

@@ -28,7 +28,7 @@ class Agenda {
         .sort({ startedAt: -1 })
         .skip(Number(offset))
         .exec()
-      return res.json({ Agendas: agendas })
+      return res.json({ agendas: agendas })
     } catch (err) {
       console.log(err)
       return err

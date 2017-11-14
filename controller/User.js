@@ -118,6 +118,23 @@ class User {
       }
     })(req, res, next);
   }
+
+  async getUserInfo(req, res, next){
+    try {
+      const id = req.params.id
+      if (!id) { throw new Error('user not found') }
+      let userInfo = await UserModel.findById(id)
+      res.send({
+        status: 200,
+        data: userInfo.toUserInfoJSON(),
+      })
+    } catch (error) {
+      res.send({
+        status: 400,
+        message: error.message
+      })
+    }
+  }
 }
 
 export default new User()

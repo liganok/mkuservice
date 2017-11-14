@@ -47,4 +47,13 @@ UserSchema.methods.toAuthJSON = function(){
   };
 };
 
+UserSchema.methods.toUserInfoJSON = function () {
+  return {
+    username: this.username,
+    email: this.email,
+    bio: this.bio,
+    image: this.image,
+  };
+};
+
 export default mongoose.model('User', UserSchema);

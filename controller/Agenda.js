@@ -1,6 +1,7 @@
 import AgendaModel from '../models/Agenda'
 import UserModel from '../models/User'
 import deepSave from '../utils/deepSave'
+import deepRemove from '../utils/deepRemove'
 
 class Agenda {
   constructor() {
@@ -83,7 +84,7 @@ class Agenda {
       if (agenda) {
         res.send({
           status: 200,
-          agenda: agenda.toJSON()
+          data: agenda.toJSON()
         })
       } else {
         throw new Error('agenda was not found')
@@ -98,13 +99,14 @@ class Agenda {
   }
 
   async update(req, res, next) {
+    let data
     try {
-      let {agenda}=req.body
-      await deepSave(agenda)
+      let { agenda } = req.body
+      data = await deepSave(agenda)
       res.send({
-        status:200,
-        //delArr:this.delArr,
-        message:'success saved'
+        status: 200,
+        data: data.savedAgenda,
+        message: 'success saved'
       })
     } catch (error) {
       res.send({
@@ -115,14 +117,42 @@ class Agenda {
   }
 
   async logicDelete(req, res, next) {
-
+    try {
+      const id = req.params.id
+      let agenda = await AgendaModel.findById(id)
+      agenda.isDel = true
+      await agenda.save()
+      res.send({
+        status: 200,
+        message: 'move to trash success'
+      })
+    } catch (error) {
+      res.send({
+        status: 400,
+        message: error.message
+      })
+    }
   }
 
   async delete(req, res, next) {
-
+    let delArr
+    try {
+      const id = req.params.id
+      if (!id) { throw new Error('no item need to be deleted') }
+      delArr = await deepRemove(id)
+      res.send({
+        status: 200,
+        data: delArr,
+        message: 'delete success'
+      })
+    } catch (error) {
+      res.send({
+        status: 400,
+        message: error.message
+      })
+    }
   }
 
-  
 
 }
 

@@ -65,8 +65,8 @@ async function deepSave(data) {
 
 export default async function main(data) {
   delArr=[]
-  await deepSave(data)
-  console.log('delArr', delArr)
+  let savedAgenda = await deepSave(data)
+  //console.log('delArr', delArr,savedAgenda)
   await AgendaModel.remove({_id:{$in:delArr}})
-  return delArr
+  return {delArr,savedAgenda}
 }

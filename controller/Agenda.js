@@ -23,7 +23,8 @@ class Agenda {
       query.isDel = true
     }
     try {
-      query.user = req.payload.id
+      query.user = req.payload.uid
+      console.log(query)
       let agendas = await AgendaModel.find(query)
         .limit(Number(limit))
         .sort({ startedAt: -1 })
@@ -74,7 +75,6 @@ class Agenda {
   async getDetail(req, res, next) {
     try {
       const id = req.params.id
-      console.log(req.params.id)
       let agenda = await AgendaModel.findById(id)
         .populate({
           path: 'subItems',
@@ -112,6 +112,8 @@ class Agenda {
     let data
     try {
       let { agenda } = req.body
+      agenda.user=req.payload.uid
+      agenda.isRoot = true
       data = await deepSave(agenda)
       res.send({
         status: 200,
@@ -130,7 +132,12 @@ class Agenda {
     try {
       const id = req.params.id
       let agenda = await AgendaModel.findById(id)
-      agenda.isDel = true
+      if(typeof req.query.undo !== 'undefined'){
+        agenda.isDel = false
+      }else{
+        agenda.isDel = true
+      }
+      
       await agenda.save()
       res.send({
         status: 200,

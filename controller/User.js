@@ -126,7 +126,7 @@ class User {
 
   async getUserInfo(req, res, next){
     try {
-      const id = req.params.id
+      const id = req.payload.uid
       if (!id) { throw new Error('user not found') }
       let userInfo = await UserInfo.findById(id)
       res.send({

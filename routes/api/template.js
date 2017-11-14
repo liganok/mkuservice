@@ -31,7 +31,7 @@ router.get('/:id', async function (req, res) {
       })
     return res.json({
       status: 200,
-      agenda: template
+      data: template
     })
   } catch (err) {
     return res.json({

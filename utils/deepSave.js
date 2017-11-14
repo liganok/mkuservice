@@ -22,13 +22,13 @@ async function getDelItems(data){
 async function save(data) {
   let result
   if (data.id.search('NEW') >= 0) {
-    let agenda =  new AgendaModel()
-    agenda.name = data.name
-    agenda.duration = data.duration
-    agenda.sequence = data.sequence
-    agenda.startedAt = data.startedAt
-    agenda.subItems = data.subItems
-    result = await agenda.save()
+    result = await new AgendaModel(data).save()
+    // agenda.name = data.name
+    // agenda.duration = data.duration
+    // agenda.sequence = data.sequence
+    // agenda.startedAt = data.startedAt
+    // agenda.subItems = data.subItems
+    //result = await agenda.save()
   } else {
     let agenda = await AgendaModel.findById(data.id)
     agenda.name = data.name

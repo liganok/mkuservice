@@ -1,6 +1,7 @@
-import UserModel from '../models/User'
 import passport from 'passport'
-import auth from '../routes/auth'
+import LocalAuth from '../models/user/LocalAuth'
+import UserInfo from '../models/user/UserInfo'
+import OAuth from '../models/user/OAuth'
 
 class User {
   async login(req, res, next) {
@@ -61,20 +62,24 @@ class User {
     }
 
     try {
-      let user = new UserModel();
-      user.email = email
-      user.username = username
-      user.setPassword(password)
-      await user.save()
+      let userInfo = await UserInfo.create({email:email,username:username})
+      let localAuth = new LocalAuth()
+      localAuth.uid = userInfo._id
+      localAuth.email = email
+      localAuth.setPassword(password)
+      await localAuth.save()
+
       return res.send({
         status: 200,
+        data: Object.assign(userInfo.toJSON(), localAuth.toAuthJSON()),
         message: 'sign up success'
       })
     } catch (error) {
+      console.log(error)
+
       return res.send({
         status: 460,
-        //type: 'AUTH/ERROR_PARAM',
-        message: error.message
+        message: error
       })
     }
   }
@@ -123,10 +128,10 @@ class User {
     try {
       const id = req.params.id
       if (!id) { throw new Error('user not found') }
-      let userInfo = await UserModel.findById(id)
+      let userInfo = await UserInfo.findById(id)
       res.send({
         status: 200,
-        data: userInfo.toUserInfoJSON(),
+        data: userInfo.toJSON(),
       })
     } catch (error) {
       res.send({

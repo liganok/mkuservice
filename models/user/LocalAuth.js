@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-var secret = require('../config').secret;
+var secret = require('../../config').secret;
 
 
 let LocalAuthSchema = new mongoose.Schema({
@@ -26,7 +26,7 @@ LocalAuthSchema.methods.setPassword = function(password){
 LocalAuthSchema.methods.generateJWT = function() {
   var today = new Date();
   var exp = new Date(today);
-  exp.setDate(today.getDate() + 60);
+  exp.setDate(today.getDate() + 1);
 
   return jwt.sign({
     uid: this.uid,

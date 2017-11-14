@@ -29,10 +29,15 @@ class Agenda {
         .sort({ startedAt: -1 })
         .skip(Number(offset))
         .exec()
-      return res.json({ agendas: agendas })
+      res.send({
+        status:200,
+        data:agendas
+      })
     } catch (err) {
-      console.log(err)
-      return err
+      res.send({
+        status: 400,
+        message: error.message
+      })
     }
   }
 
@@ -54,10 +59,15 @@ class Agenda {
         .limit(Number(limit))
         .skip(Number(offset))
         .exec()
-      return res.send({ templates: templates })
+      res.send({
+        status: 200,
+        data: templates
+      })
     } catch (err) {
-      console.log(err)
-      return err
+      res.send({
+        status: 400,
+        message: error.message
+      })
     }
   }
 

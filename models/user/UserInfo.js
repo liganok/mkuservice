@@ -2,13 +2,13 @@ import mongoose from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 
 let UserInfoSchema = new mongoose.Schema({
-  username: { type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/^[a-zA-Z0-9]+$/, 'is invalid'], index: true },
   email: { type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/\S+@\S+\.\S+/, 'is invalid'], index: true },
+  username: String,
   mobile: String,
   image: String
 }, { timestamps: true });
 
-UserSchema.plugin(uniqueValidator, { message: 'is already taken.' });
+UserInfoSchema.plugin(uniqueValidator, { message: 'is already taken.' });
 
 UserInfoSchema.methods.toJSON = function () {
   return {

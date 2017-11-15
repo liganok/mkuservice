@@ -31,8 +31,8 @@ class Agenda {
         .skip(Number(offset))
         .exec()
       res.send({
-        status:200,
-        data:agendas
+        status: 200,
+        data: agendas
       })
     } catch (err) {
       res.send({
@@ -112,7 +112,7 @@ class Agenda {
     let data
     try {
       let { agenda } = req.body
-      agenda.user=req.payload.uid
+      agenda.user = req.payload.uid
       agenda.isRoot = true
       data = await deepSave(agenda)
       res.send({
@@ -132,16 +132,17 @@ class Agenda {
     try {
       const id = req.params.id
       let agenda = await AgendaModel.findById(id)
-      if(typeof req.query.undo !== 'undefined'){
+      const { undo } = req.query
+      if (undo === '1') {
         agenda.isDel = false
-      }else{
+      } else {
         agenda.isDel = true
       }
-      
+      console.log(req.query.undo, agenda.isDel)
       await agenda.save()
       res.send({
         status: 200,
-        message: 'move to trash success'
+        message: agenda.isDel ? 'move to trash success' : 'move out from trash success'
       })
     } catch (error) {
       res.send({

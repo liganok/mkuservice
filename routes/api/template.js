@@ -1,4 +1,4 @@
-import User from '../../models/User'
+import User from '../../models/user/LocalAuth'
 import Agenda from '../../models/Agenda'
 import deepSave from '../../utils/deepSave'
 import express from 'express'
@@ -12,7 +12,7 @@ router.get('/:id', async function (req, res) {
 
   try {
     let user = await User.findOne({ email: 'liganok86@qq.com' })
-    query.user = user._id
+    query.user = user.uid
     let template = await Agenda.findOne(query)
       .populate({
         path: 'subItems',
@@ -55,7 +55,7 @@ router.get('/', async function (req, res, next) {
   }
   try {
     let user = await User.findOne({ email: 'liganok86@qq.com' })
-    query.user = user._id
+    query.user = user.uid
     let templates = await Agenda.find(query)
       .limit(Number(limit))
       .skip(Number(offset))

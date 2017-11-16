@@ -1,5 +1,5 @@
 import AgendaModel from '../models/Agenda'
-import UserModel from '../models/User'
+import UserModel from '../models/user/LocalAuth'
 import deepSave from '../utils/deepSave'
 import deepRemove from '../utils/deepRemove'
 
@@ -55,7 +55,7 @@ class Agenda {
     }
     try {
       let user = await UserModel.findOne({ email: 'liganok86@qq.com' })
-      query.user = user._id
+      query.user = user.uid
       let templates = await AgendaModel.find(query)
         .limit(Number(limit))
         .skip(Number(offset))

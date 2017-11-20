@@ -6,10 +6,12 @@ import passport from 'passport';
 import cors from 'cors';
 import Config from './config/config';
 import router from './routes'
+import https from 'https'
+import fs from 'fs'
 
 let app = express();
 const path = require('path');
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 
 // Normal express config defaults
@@ -25,6 +27,11 @@ Mongoose.connect(Config.database);
 Mongoose.connection.on('error', function () {
   console.info('Error: Could not connect to MongoDB. Did you forget to run `mongod`?'.red);
 });
+
+let options = {
+  key: fs.readFileSync('./config/ca/214346121110906.key'),
+  cert: fs.readFileSync('./config/ca/214346121110906.pem')
+}
 
 app.set('port', PORT);
 app.use(Logger('dev'));
@@ -45,6 +52,8 @@ app.use('/', function(request, response) {
   response.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
 });
 
-app.listen(app.get('port'), function () {
-  console.log('Express server listening on port ' + PORT);
-});
+// app.listen(3001, function () {
+//   console.log('Express server listening on port ' + PORT);
+// });
+https.createServer(options, app).listen(app.get('port'))
+console.log(process.env.NODE_ENV)

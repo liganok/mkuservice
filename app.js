@@ -8,10 +8,9 @@ import * as config from './config/config';
 import router from './routes'
 import https from 'https'
 import fs from 'fs'
+import path from 'path'
 
 let app = express();
-const PORT = process.env.PORT || 8080;
-
 
 // Normal express config defaults
 app.use(cors());
@@ -28,14 +27,14 @@ Mongoose.connection.on('error', function () {
 let options
 try {
   let options = {
-    key: fs.readFileSync('./config/ca/ca.key'),
-    cert: fs.readFileSync('./config/ca/ca.pem')
+    key: fs.readFileSync('./config/ca/2143483870209061.key'),
+    cert: fs.readFileSync('./config/ca/2143483870209061.pem')
   }
 } catch (error) {
   options = {}
 }
 
-app.set('port', PORT);
+app.set('port', config.port);
 app.use(Logger('dev'));
 require('./config/passport');
 router(app)
@@ -50,9 +49,8 @@ app.use(function (err, req, res, next) {
   }
 })
 
-app.listen(3001, function () {
-  console.log('Express server listening on port ' + PORT);
+app.listen(app.get('port'), function () {
+  console.log('Express server listening on port ' + app.get('port'));
 });
-process.env.PORT = 8081
-https.createServer(options, app).listen(3002)
+https.createServer(options, app).listen(443)
 console.log(process.env.NODE_ENV, process.env.PORT, app.get('port'))

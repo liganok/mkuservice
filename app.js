@@ -1,16 +1,15 @@
 import express from 'express';
 import Mongoose from 'mongoose';
 import bodyParser from 'body-parser';
-import {default as Logger} from 'morgan';
+import { default as Logger } from 'morgan';
 import passport from 'passport';
 import cors from 'cors';
-import Config from './config/config';
+import * as config from './config/config';
 import router from './routes'
 import https from 'https'
 import fs from 'fs'
 
 let app = express();
-const path = require('path');
 const PORT = process.env.PORT || 8080;
 
 
@@ -20,17 +19,20 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use(require('method-override')());
-app.use(express.static(path.resolve(__dirname, '../client/build')));
 
 //app.use(session({ secret: 'meetingku', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false  }));
-Mongoose.connect(Config.database);
+Mongoose.connect(config.db);
 Mongoose.connection.on('error', function () {
   console.info('Error: Could not connect to MongoDB. Did you forget to run `mongod`?'.red);
 });
-
-let options = {
-  key: fs.readFileSync('./config/ca/214346121110906.key'),
-  cert: fs.readFileSync('./config/ca/214346121110906.pem')
+let options
+try {
+  let options = {
+    key: fs.readFileSync('./config/ca/ca.key'),
+    cert: fs.readFileSync('./config/ca/ca.pem')
+  }
+} catch (error) {
+  options = {}
 }
 
 app.set('port', PORT);
@@ -41,19 +43,16 @@ router(app)
 app.use(function (err, req, res, next) {
   if (err.name === "UnauthorizedError") {
     res.send({
-      status:401,
+      status: 401,
       type: 'AUTH/IVALID_TOKEN',
-      message:'invalid token'
+      message: 'invalid token'
     });
   }
 })
 
-app.use('/', function(request, response) {
-  response.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+app.listen(3001, function () {
+  console.log('Express server listening on port ' + PORT);
 });
-
-// app.listen(3001, function () {
-//   console.log('Express server listening on port ' + PORT);
-// });
-https.createServer(options, app).listen(app.get('port'))
-console.log(process.env.NODE_ENV)
+process.env.PORT = 8081
+https.createServer(options, app).listen(3002)
+console.log(process.env.NODE_ENV, process.env.PORT, app.get('port'))

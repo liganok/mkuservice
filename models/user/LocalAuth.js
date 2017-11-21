@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-var secret = require('../../config').secret;
+import { secret} from '../../config/config'
 
 
 let LocalAuthSchema = new mongoose.Schema({

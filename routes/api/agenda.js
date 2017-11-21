@@ -1,4 +1,3 @@
-import User from '../../models/User'
 import express from 'express'
 import Agenda from '../../controller/Agenda'
 import auth from '../auth'

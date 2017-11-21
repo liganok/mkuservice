@@ -4,8 +4,6 @@
 import mongoose from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
 
-let User = mongoose.model('User');
-
 let AgendaSchema = new mongoose.Schema({
   name:String,
   startedAt:Date,

@@ -26,15 +26,14 @@ Mongoose.connection.on('error', function () {
 });
 let options
 try {
-  let options = {
-    key: fs.readFileSync('./config/ca/2143483870209061.key'),
-    cert: fs.readFileSync('./config/ca/2143483870209061.pem')
+   options = {
+    key: fs.readFileSync('./config/ca/214348387020906.key'),
+    cert: fs.readFileSync('./config/ca/214348387020906.pem')
   }
 } catch (error) {
   options = {}
 }
 
-app.set('port', config.port);
 app.use(Logger('dev'));
 require('./config/passport');
 router(app)
@@ -49,8 +48,5 @@ app.use(function (err, req, res, next) {
   }
 })
 
-app.listen(app.get('port'), function () {
-  console.log('Express server listening on port ' + app.get('port'));
-});
 https.createServer(options, app).listen(443)
-console.log(process.env.NODE_ENV, process.env.PORT, app.get('port'))
+console.log(process.env.NODE_ENV, config.db, config.secret)

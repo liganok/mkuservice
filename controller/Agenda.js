@@ -24,7 +24,6 @@ class Agenda {
     }
     try {
       query.user = req.payload.uid
-      console.log(query)
       let agendas = await AgendaModel.find(query)
         .limit(Number(limit))
         .sort({ startedAt: -1 })
@@ -138,7 +137,6 @@ class Agenda {
       } else {
         agenda.isDel = true
       }
-      console.log(req.query.undo, agenda.isDel)
       await agenda.save()
       res.send({
         status: 200,

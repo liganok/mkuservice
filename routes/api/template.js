@@ -62,7 +62,6 @@ router.get('/', async function (req, res, next) {
       .exec()
     return res.json({ templates: templates })
   } catch (err) {
-    console.log(err)
     return err
   }
 })

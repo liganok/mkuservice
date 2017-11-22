@@ -48,4 +48,4 @@ app.use(function (err, req, res, next) {
 })
 
 https.createServer(options, app).listen(config.port)
-console.log(process.env.NODE_ENV, config.port, config.db, config.secret)
+console.log(process.env.NODE_ENV, config.port, config.db.substring(0,4), config.secret.substring(0,4))

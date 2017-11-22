@@ -6,7 +6,6 @@ import OAuth from '../models/user/OAuth'
 class User {
   async login(req, res, next) {
     try {
-      console.log(req.body, req.query)
       let { email, password } = req.body.user
       if (!email) {
         throw new Error('email is black')
@@ -27,7 +26,6 @@ class User {
 
       if (user) {
         user.token = user.generateJWT();
-        console.log('auth passed');
         return res.send({
           status: 200,
           user: user.toAuthJSON()
@@ -75,8 +73,6 @@ class User {
         message: 'sign up success'
       })
     } catch (error) {
-      console.log(error)
-
       return res.send({
         status: 460,
         message: error

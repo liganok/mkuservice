@@ -24,14 +24,13 @@ Mongoose.connect(config.db);
 Mongoose.connection.on('error', function () {
   console.info('Error: Could not connect to MongoDB. Did you forget to run `mongod`?'.red);
 });
-let options
+let options ={}
 try {
    options = {
     key: fs.readFileSync('./config/ca/214348387020906.key'),
     cert: fs.readFileSync('./config/ca/214348387020906.pem')
   }
 } catch (error) {
-  options = {}
 }
 
 app.use(Logger('dev'));
@@ -48,5 +47,5 @@ app.use(function (err, req, res, next) {
   }
 })
 
-https.createServer(options, app).listen(443)
-console.log(process.env.NODE_ENV, config.db, config.secret)
+https.createServer(options, app).listen(config.port)
+console.log(process.env.NODE_ENV, config.port, config.db, config.secret)

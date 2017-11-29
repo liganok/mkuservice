@@ -28,7 +28,7 @@ class User {
         user.token = user.generateJWT();
         return res.send({
           status: 200,
-          user: user.toAuthJSON()
+          data: user.toAuthJSON()
         });
       } else {
         return res.send({
@@ -60,7 +60,7 @@ class User {
     }
 
     try {
-      let userInfo = await UserInfo.create({email:email,username:username})
+      let userInfo = await UserInfo.create({ email: email, username: username })
       let localAuth = new LocalAuth()
       localAuth.uid = userInfo._id
       localAuth.email = email
@@ -69,8 +69,8 @@ class User {
 
       return res.send({
         status: 200,
-        data: Object.assign(userInfo.toJSON(), localAuth.toAuthJSON()),
-        message: 'sign up success'
+        data: userInfo.toAuthJSON(),
+        message: 'Sign up success'
       })
     } catch (error) {
       return res.send({
@@ -109,7 +109,7 @@ class User {
         return res.send({
           status: 200,
           user: user.toAuthJSON(),
-          message:'password reset success'
+          message: 'password reset success'
         });
       } else {
         return res.send({
@@ -120,7 +120,7 @@ class User {
     })(req, res, next);
   }
 
-  async getUserInfo(req, res, next){
+  async getUserInfo(req, res, next) {
     try {
       const id = req.payload.uid
       if (!id) { throw new Error('user not found') }
@@ -136,6 +136,73 @@ class User {
       })
     }
   }
+
+  async oAuthRegister(req, res, next) {
+    try {
+      var { oauth_name, oauth_id, oauth_access_token, oauth_expires } = req.body.user
+      if (!oauth_name) {
+        throw new Error('oAuth name is black')
+      }
+      if (!oauth_id) {
+        throw new Error('oAuth id is black')
+      }
+      if (!oauth_access_token) {
+        throw new Error('Access token is black')
+      }
+      if (!oauth_expires) {
+        throw new Error('Expires is black')
+      }
+    } catch (error) {
+      return res.send({
+        status: 460,
+        type: 'AUTH/ERROR_PARAM',
+        message: error.message
+      })
+    }
+
+    try {
+      let oAuth = await OAuth.findOne({ oauth_name: oauth_name, oauth_id: oauth_id })
+      let userInfo
+      let oAuthUserInfo = await getOAuthUserInfo(oauth_name, oauth_access_token)
+      if (oAuth) {
+        oAuth.oauth_access_token = oauth_access_token
+        oAuth.oauth_expires = oauth_expires
+        await oAuth.save()
+        userInfo = await UserInfo.findById(oAuth.uid)
+      } else {
+        userInfo = new UserInfo({
+          auth_type: 'O',
+          username: oAuthUserInfo.username,
+          mobile: oAuthUserInfo.mobile,
+          email: oAuthUserInfo.email
+        }).save()
+
+        let newOAuth = new oAuth({
+          uid:userInfo._id,
+          oauth_name: oauth_name,
+          oauth_id: oauth_id,
+          oauth_access_token:oauth_access_token,
+          oauth_expires:oauth_expires
+        }).save()
+      }
+
+      return res.send({
+        status: 200,
+        data: userInfo.toAuthJSON(),
+        message: 'Sign up success'
+      })
+    } catch (error) {
+      return res.send({
+        status: 460,
+        message: error
+      })
+    }
+  }
+
+  async getOAuthUserInfo(type,token){
+    return {}
+  }
+
 }
 
 export default new User()

@@ -8,14 +8,4 @@ let OAuthSchema = new mongoose.Schema({
   oauth_expires: Number
 }, {timestamps: true});
 
-OAuthSchema.methods.toAuthJSON = function(){
-  return {
-    uid: this.uid,
-    oauth_name: this.oauth_name,
-    oauth_id: this.oauth_id,
-    oauth_access_token: this.oauth_access_token,
-    oauth_expires: this.oauth_expires
-  };
-};
-
 export default mongoose.model('OAuth', OAuthSchema);

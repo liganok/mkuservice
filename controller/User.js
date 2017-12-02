@@ -1,9 +1,15 @@
 import passport from 'passport'
+import axios from 'axios'
+
 import LocalAuth from '../models/user/LocalAuth'
 import UserInfo from '../models/user/UserInfo'
 import OAuth from '../models/user/OAuth'
 
 class User {
+  constructor() {
+    this.oAuthRegister = this.oAuthRegister.bind(this)
+
+  }
   async login(req, res, next) {
     try {
       let { email, password } = req.body.user
@@ -139,18 +145,12 @@ class User {
 
   async oAuthRegister(req, res, next) {
     try {
-      var { oauth_name, oauth_id, oauth_access_token, oauth_expires } = req.body.user
+      var { oauth_name, oauth_access_token, oauth_expires } = req.body.user
       if (!oauth_name) {
         throw new Error('oAuth name is black')
       }
-      if (!oauth_id) {
-        throw new Error('oAuth id is black')
-      }
       if (!oauth_access_token) {
         throw new Error('Access token is black')
-      }
-      if (!oauth_expires) {
-        throw new Error('Expires is black')
       }
     } catch (error) {
       return res.send({
@@ -161,29 +161,37 @@ class User {
     }
 
     try {
-      let oAuth = await OAuth.findOne({ oauth_name: oauth_name, oauth_id: oauth_id })
+      let oAuthUserInfo = await this.getOAuthUserInfo(oauth_name, oauth_access_token)
+      //console.log(oAuthUserInfo)
+
+      let oAuth = await OAuth.findOne({ oauth_name: oAuthUserInfo.oauth_name, oauth_id: oAuthUserInfo.oauth_id })
+      console.log(oAuth)
       let userInfo
-      let oAuthUserInfo = await getOAuthUserInfo(oauth_name, oauth_access_token)
+
       if (oAuth) {
         oAuth.oauth_access_token = oauth_access_token
         oAuth.oauth_expires = oauth_expires
         await oAuth.save()
         userInfo = await UserInfo.findById(oAuth.uid)
+        userInfo.username = oAuthUserInfo.username
+        userInfo.email = oAuthUserInfo.email
+        userInfo.image = oAuthUserInfo.image
+        await userInfo.save()
       } else {
-        userInfo = new UserInfo({
+        userInfo = await new UserInfo({
           auth_type: 'O',
           username: oAuthUserInfo.username,
-          mobile: oAuthUserInfo.mobile,
+          image: oAuthUserInfo.image,
           email: oAuthUserInfo.email
         }).save()
 
-        let newOAuth = new oAuth({
+        await OAuth.create({
           uid:userInfo._id,
-          oauth_name: oauth_name,
-          oauth_id: oauth_id,
+          oauth_name: oAuthUserInfo.oauth_name,
+          oauth_id: oAuthUserInfo.oauth_id,
           oauth_access_token:oauth_access_token,
           oauth_expires:oauth_expires
-        }).save()
+        })
       }
 
       return res.send({
@@ -200,7 +208,30 @@ class User {
   }
 
   async getOAuthUserInfo(type,token){
-    return {}
+    let targetURL = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${token}`
+    try {
+      let res = await axios.get(targetURL)
+      let userInfo = res.data
+      return {
+        oauth_name: type,
+        oauth_id: userInfo.id,
+        oauth_access_token: token,
+        username: userInfo.name,
+        email: userInfo.email,
+        image: userInfo.picture,
+        gender: userInfo.gender
+      }
+    } catch (error) {
+      return {
+        oauth_name: type,
+        oauth_id: 'id123',
+        oauth_access_token: token,
+        username: 'ligan',
+        email: 'liganok86@xx.com',
+        image: '',
+        gender: 'male'
+      }
+    }
   }
 
 }

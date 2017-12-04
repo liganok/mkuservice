@@ -13,6 +13,7 @@ let AgendaSchema = new mongoose.Schema({
   sequence:{type:Number,default:0},
   user:{type:mongoose.Schema.Types.ObjectId,ref:'User'},
   subItems:[{type:mongoose.Schema.Types.ObjectId,ref:'Agenda'}],
+  location:String
 },{timestamps:true});
 
 AgendaSchema.methods.updateDuration = function () {
@@ -38,6 +39,7 @@ AgendaSchema.methods.toJSON = function () {
     startedAt:this.startedAt,
     updatedAt:this.updatedAt,
     createdAt:this.createdAt,
+    location:this.location
   };
 };
 

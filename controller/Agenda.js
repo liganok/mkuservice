@@ -96,7 +96,7 @@ class Agenda {
           data: agenda.toJSON()
         })
       } else {
-        throw new Error('agenda was not found')
+        throw new Error('Agenda was not found')
       }
     } catch (error) {
       return res.send({
@@ -117,7 +117,7 @@ class Agenda {
       res.send({
         status: 200,
         data: data.savedAgenda,
-        message: 'success saved'
+        message: 'Success saved'
       })
     } catch (error) {
       res.send({
@@ -140,7 +140,7 @@ class Agenda {
       await agenda.save()
       res.send({
         status: 200,
-        message: agenda.isDel ? 'move to trash success' : 'move out from trash success'
+        message: agenda.isDel ? 'Move to trash success' : 'Move out from trash success'
       })
     } catch (error) {
       res.send({
@@ -154,12 +154,12 @@ class Agenda {
     let delArr
     try {
       const id = req.params.id
-      if (!id) { throw new Error('no item need to be deleted') }
+      if (!id) { throw new Error('No item need to be deleted') }
       delArr = await deepRemove(id)
       res.send({
         status: 200,
         data: delArr,
-        message: 'delete success'
+        message: 'Delete success'
       })
     } catch (error) {
       res.send({

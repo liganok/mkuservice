@@ -14,10 +14,10 @@ class User {
     try {
       let { email, password } = req.body.user
       if (!email) {
-        throw new Error('email is black')
+        throw new Error('Email is black')
       }
       if (!password) {
-        throw new Error('password is black')
+        throw new Error('Password is black')
       }
     } catch (error) {
       return res.send({
@@ -39,7 +39,7 @@ class User {
       } else {
         return res.send({
           status: 422,
-          message: info
+          message: info.errors
         });
       }
     })(req, res, next);
@@ -49,13 +49,13 @@ class User {
     try {
       var { email, password, username } = req.body.user
       if (!email) {
-        throw new Error('email is black')
+        throw new Error('Email is black')
       }
       if (!password) {
-        throw new Error('password is black')
+        throw new Error('Password is black')
       }
       if (!username) {
-        throw new Error('username is black')
+        throw new Error('Username is black')
       }
     } catch (error) {
       return res.send({
@@ -81,7 +81,7 @@ class User {
     } catch (error) {
       return res.send({
         status: 460,
-        message: error
+        message: 'Email is invailid'
       })
     }
   }

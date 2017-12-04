@@ -36,6 +36,8 @@ async function save(data) {
     agenda.sequence = data.sequence
     agenda.startedAt = data.startedAt
     agenda.subItems = data.subItems
+    agenda.location = data.location
+
     result = await agenda.save()
   }
   return result

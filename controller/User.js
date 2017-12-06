@@ -113,7 +113,7 @@ class User {
         })
       }
 
-      return res.send(userInfo.toAuthJSON())
+      return res.send({ data: userInfo.toAuthJSON()})
     } catch (error) {
       return res.status(500).send({ error: { code: 500, message: error.message } })
     }

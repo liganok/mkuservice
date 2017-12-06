@@ -4,6 +4,7 @@ import auth from '../auth'
 const router = express.Router()
 
 router.get('/template', Agenda.getTemplateList)
+router.get('/template/:id', Agenda.getTemplateDetail)
 router.get('/', auth.required, Agenda.getList)
 router.get('/detail/:id', auth.required, Agenda.getDetail)
 router.post('/', auth.required, Agenda.update)

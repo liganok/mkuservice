@@ -1,6 +1,5 @@
 import passport from 'passport'
 import axios from 'axios'
-
 import LocalAuth from '../models/user/LocalAuth'
 import UserInfo from '../models/user/UserInfo'
 import OAuth from '../models/user/OAuth'
@@ -13,59 +12,23 @@ class User {
   async login(req, res, next) {
     try {
       let { email, password } = req.body.user
-      if (!email) {
-        throw new Error('Email is black')
-      }
-      if (!password) {
-        throw new Error('Password is black')
-      }
+      if (!email) { throw new Error('Email is black') }
+      if (!password) { throw new Error('Password is black') }
+      let user = await LocalAuth.findOne({ email: email })
+      if (!user || !user.validPassword(password)) { throw new Error('Email or password invaild') }
+      let userInfo = await UserInfo.findById(user.uid)
+      return res.send({ data: userInfo.toAuthJSON() })
     } catch (error) {
-      return res.send({
-        status: 460,
-        type: 'AUTH/ERROR_PARAM',
-        message: error.message
-      })
+      return res.status(460).send({ error: { code: 460, message: error.message } })
     }
-
-    passport.authenticate('local', { session: false }, function (err, user, info) {
-      if (err) { return next(err); }
-
-      if (user) {
-        user.token = user.generateJWT();
-        return res.send({
-          status: 200,
-          data: user.toAuthJSON()
-        });
-      } else {
-        return res.send({
-          status: 422,
-          message: info.errors
-        });
-      }
-    })(req, res, next);
   }
 
   async register(req, res, next) {
     try {
       var { email, password, username } = req.body.user
-      if (!email) {
-        throw new Error('Email is black')
-      }
-      if (!password) {
-        throw new Error('Password is black')
-      }
-      if (!username) {
-        throw new Error('Username is black')
-      }
-    } catch (error) {
-      return res.send({
-        status: 460,
-        type: 'AUTH/ERROR_PARAM',
-        message: error.message
-      })
-    }
-
-    try {
+      if (!email) { throw new Error('Email is black') }
+      if (!password) { throw new Error('Password is black') }
+      if (!username) { throw new Error('Username is black') }
       let userInfo = await UserInfo.create({ email: email, username: username })
       let localAuth = new LocalAuth()
       localAuth.uid = userInfo._id
@@ -73,57 +36,29 @@ class User {
       localAuth.setPassword(password)
       await localAuth.save()
 
-      return res.send({
-        status: 200,
-        data: userInfo.toAuthJSON(),
-        message: 'Sign up success'
-      })
+      return res.send({ data: userInfo.toAuthJSON(), message: 'Sign up success' })
     } catch (error) {
-      return res.send({
-        status: 460,
-        message: 'Email is invailid'
-      })
+      return res.status(460).send({ error: { code: 460, message: error.message } })
     }
   }
 
   async resetPassword(req, res, next) {
     try {
       var { newPassword, password, email } = req.body.user
-      if (!email) {
-        throw new Error('email is black')
+      if (!email) { throw new Error('email is black') }
+      if (!password) { throw new Error('password is black') }
+      if (!newPassword) { throw new Error('newPassword is black') }
+      let user = await LocalAuth.findOne({ email: email })
+      if (!user || !user.validPassword(password)) {
+        throw new Error('Email or password invaild')
       }
-      if (!password) {
-        throw new Error('password is black')
-      }
-      if (!newPassword) {
-        throw new Error('newPassword is black')
-      }
+      user.setPassword(newPassword)
+      user = await user.save()
+      let userInfo = await UserInfo.findById(user.uid)
+      return res.send({ data: userInfo.toAuthJSON(), message: 'Reset password success' })
     } catch (error) {
-      return res.send({
-        status: 460,
-        type: 'AUTH/ERROR_PARAM',
-        message: error.message
-      })
+      return res.status(460).send({ error: { code: 460, message: error.message } })
     }
-
-    passport.authenticate('local', { session: false }, async function (err, user, info) {
-      if (err) { return next(err); }
-
-      if (user) {
-        user.setPassword(newPassword)
-        user = await user.save()
-        return res.send({
-          status: 200,
-          user: user.toAuthJSON(),
-          message: 'password reset success'
-        });
-      } else {
-        return res.send({
-          status: 422,
-          message: info
-        });
-      }
-    })(req, res, next);
   }
 
   async getUserInfo(req, res, next) {
@@ -131,39 +66,23 @@ class User {
       const id = req.payload.uid
       if (!id) { throw new Error('user not found') }
       let userInfo = await UserInfo.findById(id)
-      res.send({
-        status: 200,
-        data: userInfo.toJSON(),
-      })
+      return res.send({ data: userInfo.toJSON() })
     } catch (error) {
-      res.send({
-        status: 400,
-        message: error.message
-      })
+      return res.status(460).send({ error: { code: 460, message: error.message } })
     }
   }
 
   async oAuthRegister(req, res, next) {
     try {
-      var { oauth_name, oauth_access_token, oauth_expires } = req.body.user
-      if (!oauth_name) {
-        throw new Error('oAuth name is black')
-      }
-      if (!oauth_access_token) {
-        throw new Error('Access token is black')
-      }
+      const { oauth_name, oauth_access_token, oauth_expires } = req.body.user
+      if (!oauth_name) { throw new Error('oAuth name is black') }
+      if (!oauth_access_token) { throw new Error('Access token is black') }
     } catch (error) {
-      return res.send({
-        status: 460,
-        type: 'AUTH/ERROR_PARAM',
-        message: error.message
-      })
+      return res.status(460).send({ error: { code: 460, message: error.message } })
     }
 
     try {
       let oAuthUserInfo = await this.getOAuthUserInfo(oauth_name, oauth_access_token)
-      //console.log(oAuthUserInfo)
-
       let oAuth = await OAuth.findOne({ oauth_name: oAuthUserInfo.oauth_name, oauth_id: oAuthUserInfo.oauth_id })
       console.log(oAuth)
       let userInfo
@@ -186,28 +105,21 @@ class User {
         }).save()
 
         await OAuth.create({
-          uid:userInfo._id,
+          uid: userInfo._id,
           oauth_name: oAuthUserInfo.oauth_name,
           oauth_id: oAuthUserInfo.oauth_id,
-          oauth_access_token:oauth_access_token,
-          oauth_expires:oauth_expires
+          oauth_access_token: oauth_access_token,
+          oauth_expires: oauth_expires
         })
       }
 
-      return res.send({
-        status: 200,
-        data: userInfo.toAuthJSON(),
-        message: 'Sign up success'
-      })
+      return res.send(userInfo.toAuthJSON())
     } catch (error) {
-      return res.send({
-        status: 460,
-        message: error
-      })
+      return res.status(500).send({ error: { code: 500, message: error.message } })
     }
   }
 
-  async getOAuthUserInfo(type,token){
+  async getOAuthUserInfo(type, token) {
     let targetURL = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${token}`
     try {
       let res = await axios.get(targetURL)

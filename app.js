@@ -38,12 +38,16 @@ require('./config/passport');
 router(app)
 
 app.use(function (err, req, res, next) {
-  if (err.name === "UnauthorizedError") {
-    res.send({
-      status: 401,
-      type: 'AUTH/IVALID_TOKEN',
-      message: 'invalid token'
+  if (err.name === 'ValidationError') {
+    return res.status(422).json({
+      error: Object.keys(err.errors).reduce(function (errors, key) {
+        errors[key] = err.errors[key].message;
+        return errors;
+      }, {})
     });
+  }
+  if (err.name === "UnauthorizedError") {
+    res.status(401).send({ error: { code: 401, message: 'Invalid token' } })
   }
 })
 

@@ -1,5 +1,5 @@
 import AgendaModel from '../models/Agenda'
-import UserModel from '../models/user/LocalAuth'
+import UserInfoModel from '../models/user/UserInfo'
 import deepSave from '../utils/deepSave'
 import deepRemove from '../utils/deepRemove'
 
@@ -10,6 +10,7 @@ class Agenda {
     let query = { isRoot: true, isDel: { $ne: true } }
     let limit = 20
     let offset = 0
+    let httpStatus
 
     if (typeof req.query.limit !== 'undefined') {
       limit = req.query.limit
@@ -29,22 +30,16 @@ class Agenda {
         .sort({ startedAt: -1 })
         .skip(Number(offset))
         .exec()
-      res.send({
-        status: 200,
-        data: agendas
-      })
+      return res.send({ data: agendas})
     } catch (err) {
-      res.send({
-        status: 400,
-        message: error.message
-      })
+      return res.status(404).send({ error: { code: 404, message: error.message } })
     }
   }
 
   async getTemplateList(req, res, next) {
-    var query = { isRoot: true }
-    var limit = 20
-    var offset = 0
+    let query = { isRoot: true,isDel:false }
+    let limit = 20
+    let offset = 0
     if (typeof req.query.limit !== 'undefined') {
       limit = req.query.limit
     }
@@ -53,28 +48,23 @@ class Agenda {
       offset = req.query.offset
     }
     try {
-      let user = await UserModel.findOne({ email: 'liganok86@qq.com' })
-      query.user = user.uid
+      let user = await UserInfoModel.findOne({ email: 'liganok86@qq.com' })
+      query.user = user._id
       let templates = await AgendaModel.find(query)
         .limit(Number(limit))
         .skip(Number(offset))
         .exec()
-      res.send({
-        status: 200,
-        data: templates
-      })
+      return res.send({ data: templates})
+
     } catch (err) {
-      res.send({
-        status: 400,
-        message: error.message
-      })
+      return res.status(404).send({ error: { code: 404, message: error.message } })
     }
   }
 
   async getDetail(req, res, next) {
     try {
       const id = req.params.id
-      let agenda = await AgendaModel.findById(id)
+      let agenda = await AgendaModel.findOne({ _id: id, user: req.payload.uid })
         .populate({
           path: 'subItems',
           populate: {
@@ -91,19 +81,12 @@ class Agenda {
           }
         })
       if (agenda) {
-        res.send({
-          status: 200,
-          data: agenda.toJSON()
-        })
+        res.send({ data: agenda.toJSON()})
       } else {
-        throw new Error('Agenda was not found')
+        return res.status(404).send({ error: { code: 404, message: 'Data was not found' } })
       }
     } catch (error) {
-      return res.send({
-        status: 404,
-        type: 'AGENDA/NOT_FOUND',
-        message: error.message
-      })
+      return res.status(500).send({ error: { code: 500, message: error.message } })
     }
   }
 
@@ -114,16 +97,12 @@ class Agenda {
       agenda.user = req.payload.uid
       agenda.isRoot = true
       data = await deepSave(agenda)
-      res.send({
-        status: 200,
+      return res.send({
         data: data.savedAgenda,
         message: 'Success saved'
       })
     } catch (error) {
-      res.send({
-        status: 400,
-        message: error.message
-      })
+      return res.status(500).send({ error: { code: 500, message: error.message } })
     }
   }
 
@@ -138,15 +117,11 @@ class Agenda {
         agenda.isDel = true
       }
       await agenda.save()
-      res.send({
-        status: 200,
+      return res.send({
         message: agenda.isDel ? 'Move to trash success' : 'Move out from trash success'
       })
     } catch (error) {
-      res.send({
-        status: 400,
-        message: error.message
-      })
+      return res.status(500).send({ error: { code: 500, message: error.message } })
     }
   }
 
@@ -156,20 +131,45 @@ class Agenda {
       const id = req.params.id
       if (!id) { throw new Error('No item need to be deleted') }
       delArr = await deepRemove(id)
-      res.send({
-        status: 200,
+      return res.send({
         data: delArr,
         message: 'Delete success'
       })
     } catch (error) {
-      res.send({
-        status: 400,
-        message: error.message
-      })
+      return res.status(500).send({ error: { code: 500, message: error.message } })
     }
   }
 
+  async getTemplateDetail(req, res, next) {
+    let query = { isRoot: true, _id: '', user: '' }
+    if (req.params.id) {
+      query._id = req.params.id
+    }
 
+    try {
+      let user = await UserInfoModel.findOne({ email: 'liganok86@qq.com' })
+      query.user = user._id
+      let template = await AgendaModel.findOne(query)
+        .populate({
+          path: 'subItems',
+          populate: {
+            path: 'subItems',
+            populate: {
+              path: 'subItems',
+              populate: {
+                path: 'subItems',
+                populate: {
+                  path: 'subItems'
+                }
+              }
+            }
+          }
+        })
+      return res.send({ data: template.toJSON()})
+    } catch (err) {
+      return res.status(500).send({ error: { code: 500, message: error.message } })
+    }
+  }
 }
 
 export default new Agenda()

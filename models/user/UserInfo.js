@@ -26,7 +26,7 @@ UserInfoSchema.methods.toJSON = function () {
 UserInfoSchema.methods.generateJWT = function () {
   var today = new Date();
   var exp = new Date(today);
-  exp.setDate(today.getDate() + 1);
+  exp.setDate(today.getDate() + 5);
 
   return jwt.sign({
     uid: this._id,

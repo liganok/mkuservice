@@ -77,11 +77,7 @@ class User {
       const { oauth_name, oauth_access_token, oauth_expires } = req.body.user
       if (!oauth_name) { throw new Error('oAuth name is black') }
       if (!oauth_access_token) { throw new Error('Access token is black') }
-    } catch (error) {
-      return res.status(460).send({ error: { code: 460, message: error.message } })
-    }
 
-    try {
       let oAuthUserInfo = await this.getOAuthUserInfo(oauth_name, oauth_access_token)
       let oAuth = await OAuth.findOne({ oauth_name: oAuthUserInfo.oauth_name, oauth_id: oAuthUserInfo.oauth_id })
       console.log(oAuth)
@@ -113,7 +109,7 @@ class User {
         })
       }
 
-      return res.send({ data: userInfo.toAuthJSON()})
+      return res.send({ data: userInfo.toAuthJSON() })
     } catch (error) {
       return res.status(500).send({ error: { code: 500, message: error.message } })
     }

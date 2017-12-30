@@ -1,8 +1,18 @@
 import AgendaModel from '../models/Agenda'
 let delArr = []
 
-async function getDelItems(data){
-  let delArr =[]
+//Get the subitem with itself
+async function getAllSubItems(id) {
+  let result = [id]
+  let agenda = await AgendaModel.findById(id)
+  for (let i = 0; i < agenda.subItems.length; i++) {
+    result = result.concat(await getAllSubItems(agenda.subItems[i]))
+  }
+  return result
+}
+
+async function getDelItems(data) {
+  let delArr = []
   if (data.id.search('NEW') < 0) {
     let agenda = await AgendaModel.findById(data.id)
     let targetSubItemsIdArr = []
@@ -10,11 +20,11 @@ async function getDelItems(data){
       targetSubItemsIdArr.push(item.id)
     })
 
-    agenda.subItems.forEach(item => {
-      if (-1 === targetSubItemsIdArr.indexOf(item.toString())) {
-        delArr.push(item)
+    for(let i=0;i<agenda.subItems.length;i++){
+      if (-1 === targetSubItemsIdArr.indexOf(agenda.subItems[i].toString())) {
+        delArr = delArr.concat(await getAllSubItems(agenda.subItems[i]))
       }
-    })
+    }
   }
   return delArr
 }
@@ -23,12 +33,6 @@ async function save(data) {
   let result
   if (data.id.search('NEW') >= 0) {
     result = await new AgendaModel(data).save()
-    // agenda.name = data.name
-    // agenda.duration = data.duration
-    // agenda.sequence = data.sequence
-    // agenda.startedAt = data.startedAt
-    // agenda.subItems = data.subItems
-    //result = await agenda.save()
   } else {
     let agenda = await AgendaModel.findById(data.id)
     agenda.name = data.name
@@ -53,7 +57,7 @@ async function deepSave(data) {
     for (let i = 0; i < data.subItems.length; i++) {
       let result = await deepSave(data.subItems[i])
       if (data.subItems[i].id.search('NEW') >= 0) {
-        if (typeof result !== 'undefined'){
+        if (typeof result !== 'undefined') {
           data.subItems[i] = result.id
         }
       } else {
@@ -66,8 +70,9 @@ async function deepSave(data) {
 }
 
 export default async function main(data) {
-  delArr=[]
+  delArr = []
   let savedAgenda = await deepSave(data)
-  await AgendaModel.remove({_id:{$in:delArr}})
-  return {delArr,savedAgenda}
+  await AgendaModel.remove({ _id: { $in: delArr } })
+  //console.log(delArr)
+  return { delArr, savedAgenda }
 }

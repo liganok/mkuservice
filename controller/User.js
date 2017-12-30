@@ -80,7 +80,6 @@ class User {
 
       let oAuthUserInfo = await this.getOAuthUserInfo(oauth_name, oauth_access_token)
       let oAuth = await OAuth.findOne({ oauth_name: oAuthUserInfo.oauth_name, oauth_id: oAuthUserInfo.oauth_id })
-      console.log(oAuth)
       let userInfo
 
       if (oAuth) {
